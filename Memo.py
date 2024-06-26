@@ -28,14 +28,15 @@ class MemoItem(ObjectModelItem):
 class Service(MemoItem):
     Icon = "AWS"
     Color = "#adcdd9"
-    Draw = DRAW.DEF - DRAW.CLASS - DRAW.ID
-
+    Draw = DRAW.VIEW + DRAW.ICON + DRAW.ID + DRAW.EXT
 
     @staticmethod
     def fields():
         return {
                     'Id'  : (Service, FIELD.ID),
                     'Name': (str, FIELD.VIEW),
+                    'Note': (str, FIELD.EXT),
+                    'Parent': (Service, FIELD.OWNER)
                 }
 
 class Article(MemoItem):
@@ -76,9 +77,9 @@ OM.fetch()
 
 # OM.print()
 
-# source = OM.source()
-# with open('./data/Memo.svg', 'w') as file:
-#     file.write(source)
+source = OM.source()
+with open('./data/Memo.svg', 'w') as file:
+    file.write(source)
 
 draw = OM.html()
 with open('./data/Memo.html', 'w') as file:

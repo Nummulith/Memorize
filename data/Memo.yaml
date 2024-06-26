@@ -1,4 +1,10 @@
 Service:
+  - Id: cog
+    Name: Cognito
+
+  - Id: apig
+    Name: API Gateway
+
   - Id: s3
     Name: s3 Bucket
 
@@ -17,6 +23,61 @@ Service:
   - Id: eb
     Name: EventBridge
 
+  - Id: ct
+    Name: CloudTrail
+
+  - Id: fm
+    Name: Firewall Manager
+
+  - Id: sh
+    Name: Security Hub
+    Note: Regional service
+
+  - Id: shield-a
+    Name: AWS Shield (Advanced)
+    Note: DDoS Protection
+
+  - Id: wACL
+    Name: web ACL
+    Parent: waf
+
+  - Id: waf
+    Name: Web Application Firewall
+
+  - Id: ta
+    Name: Trusted Advisor
+    Note: notifications by email weekly
+
+  - Id: detective
+    Name: Amazon Detective
+
+  - Id: kms
+    Name: Key Management Service
+
+  - Id: ins
+    Name: Inspector
+
+  - Id: ec2
+    Name: EC2
+
+  - Id: ecs
+    Name: Elastic Container Service
+
+  - Id: mirror
+    Name: VPC Traffic Mirroring
+    Note: Content inspection of a packets
+
+  - Id: fl
+    Name: VPC Flow Logs
+    Note: captures metadata, not the traffic itself
+
+  - Id: cloudfront
+    Name: Cloud Front
+
+  - Id: alb
+    Name: Application Load Balancer
+
+
 Article:
   - Name: Report all the root user activities
     Note: |
@@ -30,6 +91,112 @@ Article:
     Note: |
       Create an Amazon EventBridge rule that includes an event pattern that matches Medium/High severity GuardDuty findings. Set up an Amazon Simple Notification Service (Amazon SNS) topic. Configure the third-party ticketing email system as a subscriber to the SNS topic. Set the SNS topic as the target for the EventBridge rule
     Links:
-     - eb
      - gd
+     - eb
      - sns
+
+  - Name: s3 object logs in CloudTrail
+    Note: |
+      CloudTrail by default logs S3 bucket-level API calls but does not include logs for object-level requests.
+      To monitor object-level actions such as PutObjectAcl, you must enable data events for your S3 bucket or account-wide, which allows CloudTrail to log these specific events.
+    Links:
+     - s3
+     - ct
+
+  - Name: Shield Advanced - Firewall Manager - Security Hub
+    Note: |
+      AWS Firewall Manager sends findings to AWS Security Hub when AWS Shield Advanced is not protecting resources, or when an attack is identified
+    Links:
+     - shield-a
+     - fm
+     - sh
+
+  - Name: WAF - Firewall Manager - Security Hub
+    Note: |
+      AWS Firewall Manager sends findings to AWS Security Hub when a WAF policy for resources or web ACL rule is not in compliance
+    Links:
+     - wACL
+     - fm
+     - sh
+
+  - Name: Security Hub - Trusted Advisor
+    Note: |
+      Trusted Advisor receives findings from Security Hub.
+    Links:
+     - sh
+     - ta
+
+  - Name: Security Hub - Detective
+    Note: |
+      Amazon Detective receives findings from AWS Security Hub
+    Links:
+     - sh
+     - detective
+
+  - Name: Security Hub - Detective
+    Note: |
+      To perform a multipart upload with encryption using an AWS KMS key,
+      the requester must have kms:GenerateDataKey and kms:Decrypt permissions.
+    Links:
+     - s3
+     - kms
+
+  - Name: Alert to the email when ANY changes are made to the security groups.
+    Note: |
+      Configure CloudTrail to send the logs to Amazon CloudWatch.
+      Configure a CloudWatch metric filter for the log group with a filter pattern on all security group changes.
+      Create a CloudWatch alarm
+    Links:
+     - ct
+     - cw
+
+  - Name: Amazon Inspector
+    Note: |
+      Amazon Inspector automatically discovers workloads, such as Amazon EC2 instances, containers, and AWS Lambda functions,
+      and scans them for software vulnerabilities and unintended network exposure.
+    Links:
+     - ins
+     - ec2
+     - lambda
+     - ecs
+
+  - Name: Content inspection of the traffic passing through Route 53
+    Note: |
+      Configure VPC Traffic Mirroring
+    Links:
+     - mirror
+
+  - Name: CloudWatch Events vs EventBridge
+    Note: |
+      AWS suggests using Amazon EventBridge to manage your events.
+      CloudWatch Events and EventBridge are the same underlying service and API, but EventBridge provides more features.
+    Links:
+     - cw
+     - eb
+
+  - Name: Web Application Firewall
+    Note: |
+      Protect Your Web Apps In The Cloud
+      Can protect:
+    Links:
+     - waf
+     - alb
+     - cloudfront
+     - apig
+     - cog
+     - ecs
+
+  - Name: Detects public S3 object, set the alarm to notificate and remediate
+    Note: |
+      Enable object-level CloudTrail logging for S3
+      configure an EventBridge event-pattern based rule to analyze the CloudTrail logs
+      The target for this rule can be set as an SNS topic.
+      The SNS would send the notification
+      Moreover, the SNS topic is also subscribed by Lambda run to secure the objects
+
+    Links:
+     - s3
+     - ct
+     - eb
+     - sns
+     - lambda
