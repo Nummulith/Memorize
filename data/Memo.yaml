@@ -1,0 +1,35 @@
+Service:
+  - Id: s3
+    Name: s3 Bucket
+
+  - Id: cw
+    Name: CloudWatch
+
+  - Id: lambda
+    Name: Lambda
+
+  - Id: sns
+    Name: SNS
+
+  - Id: gd
+    Name: GuardDuty
+
+  - Id: eb
+    Name: EventBridge
+
+Article:
+  - Name: Report all the root user activities
+    Note: |
+      Set up a CloudWatch Events rule that is triggered on any API call from the root user, then run Lambda and SNS
+    Links: 
+     - cw
+     - lambda
+     - sns
+
+  - Name: GuardDuty findings generate a ticket in a third-party system through email
+    Note: |
+      Create an Amazon EventBridge rule that includes an event pattern that matches Medium/High severity GuardDuty findings. Set up an Amazon Simple Notification Service (Amazon SNS) topic. Configure the third-party ticketing email system as a subscriber to the SNS topic. Set the SNS topic as the target for the EventBridge rule
+    Links:
+     - eb
+     - gd
+     - sns
