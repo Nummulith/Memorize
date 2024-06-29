@@ -1,4 +1,33 @@
 Service:
+
+
+  - Id: p-b
+    Name: Something-Based policies
+    
+
+  - Id: p-rb
+    Name: Resource-based policies
+    Parent: p-b
+    
+  - Id: p-ib
+    Name: Identity-based policy
+    Parent: p-b
+
+  - Id: p-sp
+    Name: Session policy
+    Parent: p-b
+
+  - Id: p-sc
+    Name: Service Control Policies (SCP)
+    Parent: p-b
+
+  - Id: p-pb
+    Name: Permissions boundary policy
+
+
+  - Id: nlb
+    Name: Network Load Balancer
+
   - Id: cog
     Name: Cognito
 
@@ -25,6 +54,9 @@ Service:
 
   - Id: ct
     Name: CloudTrail
+    Note: |
+      CloudTrail log Amazon VPC API calls.
+      It do not log network traffic.
 
   - Id: fm
     Name: Firewall Manager
@@ -34,8 +66,10 @@ Service:
     Note: Regional service
 
   - Id: shield-a
-    Name: AWS Shield (Advanced)
-    Note: DDoS Protection
+    Name: AWS Shield
+    Note: |
+      (Advanced)
+      DDoS Protection
 
   - Id: wACL
     Name: web ACL
@@ -77,67 +111,94 @@ Service:
   - Id: alb
     Name: Application Load Balancer
 
+  - Id: iam
+    Name: IAM
+
+  - Id: iamaa
+    Name: Access Analyzer
+    Parent: iam
+    Note: only run in console
+
 
 Article:
+
   - Name: Report all the root user activities
     Note: |
       Set up a CloudWatch Events rule that is triggered on any API call from the root user, then run Lambda and SNS
-    Links: 
+    Out: 
      - cw
+
+  - Name: Lambda can run SNS
+    Note: |
+       To send notifications and do the remediations
+    In:
      - lambda
+    Out: 
      - sns
 
   - Name: GuardDuty findings generate a ticket in a third-party system through email
     Note: |
-      Create an Amazon EventBridge rule that includes an event pattern that matches Medium/High severity GuardDuty findings. Set up an Amazon Simple Notification Service (Amazon SNS) topic. Configure the third-party ticketing email system as a subscriber to the SNS topic. Set the SNS topic as the target for the EventBridge rule
-    Links:
+      Create an Amazon EventBridge rule that includes an event pattern that matches Medium/High severity GuardDuty findings. Set up an Amazon Simple Notification Service (Amazon SNS) topic. Configure the third-party ticketing email system as a subscriber to the SNS topic.
+    In:
      - gd
+    Out:
      - eb
-     - sns
 
   - Name: s3 object logs in CloudTrail
     Note: |
       CloudTrail by default logs S3 bucket-level API calls but does not include logs for object-level requests.
       To monitor object-level actions such as PutObjectAcl, you must enable data events for your S3 bucket or account-wide, which allows CloudTrail to log these specific events.
-    Links:
+    In:
      - s3
+    Out:
      - ct
 
   - Name: Shield Advanced - Firewall Manager - Security Hub
     Note: |
       AWS Firewall Manager sends findings to AWS Security Hub when AWS Shield Advanced is not protecting resources, or when an attack is identified
-    Links:
+    In:
      - shield-a
+    Out:
      - fm
-     - sh
 
   - Name: WAF - Firewall Manager - Security Hub
     Note: |
       AWS Firewall Manager sends findings to AWS Security Hub when a WAF policy for resources or web ACL rule is not in compliance
-    Links:
+    In:
      - wACL
+    Out:
      - fm
+
+  - Name: Firewall Manager - Security Hub
+    Note: |
+      AWS Firewall Manager sends different findings to AWS Security Hub
+    In:
+     - fm
+    Out:
      - sh
+
 
   - Name: Security Hub - Trusted Advisor
     Note: |
       Trusted Advisor receives findings from Security Hub.
-    Links:
+    In:
      - sh
+    Out:
      - ta
 
   - Name: Security Hub - Detective
     Note: |
       Amazon Detective receives findings from AWS Security Hub
-    Links:
+    In:
      - sh
+    Out:
      - detective
 
-  - Name: Security Hub - Detective
+  - Name: Multipart s3 upload
     Note: |
       To perform a multipart upload with encryption using an AWS KMS key,
       the requester must have kms:GenerateDataKey and kms:Decrypt permissions.
-    Links:
+    In:
      - s3
      - kms
 
@@ -146,57 +207,128 @@ Article:
       Configure CloudTrail to send the logs to Amazon CloudWatch.
       Configure a CloudWatch metric filter for the log group with a filter pattern on all security group changes.
       Create a CloudWatch alarm
-    Links:
+    In:
      - ct
+    Out:
      - cw
 
   - Name: Amazon Inspector
     Note: |
       Amazon Inspector automatically discovers workloads, such as Amazon EC2 instances, containers, and AWS Lambda functions,
       and scans them for software vulnerabilities and unintended network exposure.
-    Links:
-     - ins
+    In:
      - ec2
      - lambda
      - ecs
+    Out:
+     - ins
 
   - Name: Content inspection of the traffic passing through Route 53
     Note: |
       Configure VPC Traffic Mirroring
-    Links:
+    Out:
      - mirror
 
   - Name: CloudWatch Events vs EventBridge
     Note: |
       AWS suggests using Amazon EventBridge to manage your events.
       CloudWatch Events and EventBridge are the same underlying service and API, but EventBridge provides more features.
-    Links:
+    In:
      - cw
+    Out:
      - eb
 
   - Name: Web Application Firewall
     Note: |
       Protect Your Web Apps In The Cloud
       Can protect:
-    Links:
-     - waf
+    In:
      - alb
      - cloudfront
      - apig
      - cog
      - ecs
+    Out:
+     - waf
 
-  - Name: Detects public S3 object, set the alarm to notificate and remediate
+  - Name: CloudTrail - set the alarm to notificate and remediate
     Note: |
-      Enable object-level CloudTrail logging for S3
       configure an EventBridge event-pattern based rule to analyze the CloudTrail logs
-      The target for this rule can be set as an SNS topic.
-      The SNS would send the notification
-      Moreover, the SNS topic is also subscribed by Lambda run to secure the objects
-
-    Links:
-     - s3
+    In:
      - ct
+    Out:
      - eb
+
+  - Name: EventBridge event-pattern based rule - set the alarm to notificate and remediate
+    Note: |
+      The target for this rule can be set as an SNS topic.
+    In:
+     - eb
+    Out:
      - sns
+
+  - Name: The SNS topic call Lambda to remediate
+    Note: |
+      The SNS topic can be subscribed by Lambda run to remediate
+    In:
+     - sns
+    Out:
      - lambda
+
+  - Name: Lambda access to an S3
+    Note: |
+      Create a Lambda execution role that grants access to the S3 bucket.
+      Verify that the S3 bucket policy doesn't explicitly deny access to your Lambda.
+      If your S3 bucket and the functions IAM role are in different accounts, then you must also grant the required permissions on the S3 bucket policy.
+    In:
+     - lambda
+    Out:
+     - s3
+
+  - Name: GuardDuty suppression rule
+    Note: |
+      A suppression rule is a set of criteria, consisting of a filter attribute paired with a value, used to filter findings by automatically archiving new findings that match the specified criteria.
+    Out:
+     - gd
+
+  - Name: Amazon Cognito
+    Note: |
+      For mobile applications, AWS recommends using Amazon Cognito.
+      Amazon Cognito supports guest access.
+    Out:
+     - cog
+
+  - Name: Flow logs exception
+    Note: |
+      Flow logs do not capture all IP traffic.
+      One such exception is - Traffic between:
+      an VPC private link endpoint network interface
+      and a Network Load Balancer network interface
+    Out:
+     - fl
+     - nlb
+
+
+  - Name: Policies
+    Note: |
+      Resource-based policies that grant permissions to an IAM role ARN are limited by an implicit deny in a permissions boundary or session policy
+    In:
+     - p-sp
+     - p-pb
+    Out:
+     - p-rb
+
+  - Name: Policies
+    Note: |
+      If a resource-based policy grants permission directly to the IAM user or the session principal that is making the request, then an implicit deny in an identity-based policy, a permissions boundary, or a session policy does not impact the final decision
+    In:
+     - p-sp
+     - p-pb
+    Out:
+     - p-rb
+
+  - Name: Policies
+    Note: |
+      If no applicable Allow statement is found in the SCPs, the request is explicitly denied, even if the denial is implicit
+    In:
+     - p-sc

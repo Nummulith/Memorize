@@ -9,7 +9,7 @@ from ObjectModelFramework import *
 
 class MemoItem(ObjectModelItem):
     Icon = "AWS"
-    Color = "#e998ed"
+    # Color = "#e998ed"
 
     @classmethod
     def get_objects(cls, node = None):
@@ -50,7 +50,8 @@ class Article(MemoItem):
         return {
                     'Id'  : (Article, FIELD.ID),
                     'Name': (str, FIELD.VIEW),
-                    'Links': ((Service,), FIELD.LINK),
+                    'In': ((Service,), FIELD.LINK_IN),
+                    'Out': ((Service,), FIELD.LINK),
                     'Note': (str, FIELD.EXT),
                 }
 
